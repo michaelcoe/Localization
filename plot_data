@@ -1,0 +1,11 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+data = np.load('test.npz')
+
+
+plt.plot(data['times'], data['mic1'], data['times'], data['mic2'], data['times'], data['mic3'], data['times'], data['mic4'])
+plt.xlabel('time [microseconds]')
+plt.ylabel('Voltage [mV]')
+plt.title('Electrical Noise with no input to ADC')
+plt.show()
