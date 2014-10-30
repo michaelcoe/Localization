@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.linalg import *
 from scipy.interpolate import interp1d
+import scipy.signal as sig
+import math as m
 import collections
 
 def interpolate(m1, m2, m3, m4, factor):
@@ -16,32 +18,66 @@ def interpolate(m1, m2, m3, m4, factor):
 
 	return f(inter_factor), f2(inter_factor), f3(inter_factor), f4(inter_factor)
 
+def filter(m1,m2,m3,m4, f1, f2, fs):
+
+	nyq = 0.5 * fs
+	low = f1 / nyq
+	high = f2 / nyq
+	b,a = sig.butter(6, [low, high], 'band')
+	mic1 = sig.lfilter(b,a,m1)
+	mic2 = sig.lfilter(b,a,m2)
+	mic3 = sig.lfilter(b,a,m3)
+	mic4 = sig.lfilter(b,a,m4)
+
+	return mic1, mic2, mic3, mic4
+
+
+def normalize(m1, m2, m3, m4):
+
+	norm1 = m1 - np.nanmean(m1)
+	norm2 = m2 - np.nanmean(m2)
+	norm3 = m3 - np.nanmean(m3)
+	norm4 = m4 - np.nanmean(m4)
+
+	return norm1, norm2, norm3, norm4
+	
 def correlate(m1, m2, m3, m4):
 
 	##----------------------------
 	#Assumes that m1 is the reference microphone
 	##----------------------------
 
-	cor1 = np.correlate(m1,m2)
-	cor2 = np.correlate(m1,m3)
-	cor3 = np.correlate(m1,m4)
+	cor1 = np.correlate(m1,m1)
+	cor2 = np.correlate(m1,m2)
+	cor3 = np.correlate(m1,m3)
+	cor4 = np.correlate(m1,m4)
 
-	return cor1, cor2, cor3	
+	return cor1, cor2, cor3, cor4
 
+def get_taus(cor1, cor2, cor3, cor4, sampleRate):
 
-def tdoa(t1, t2, t3, t4)
+	c1 = np.argmax(np.absolute(cor1))
+	c2 = np.argmax(np.absolute(cor2))
+	c3 = np.argmax(np.absolute(cor3))
+	c4 = np.argmax(np.absolute(cor4))
+
+	tau1 = cor1[c1]/sampleRate
+	tau2 = cor2[c2]/sampleRate
+	tau3 = cor3[c3]/sampleRate
+	tau4 = cor4[c4]/sampleRate
+
+	return tau1, tau2, tau3, tau4
+
+def tdoa(t1, t2, t3, t4):
 	#speed of sound in medium
 	v = 3450
-	numOfDimensions = 3
-	nSensors = 5
+	numOfDimensions = 2
+	nSensors = 4
 	region = 3
-	sensorRegion = 2
 
+	sensorTimes = np.array([t1,t2, t3, t4])
 
-	#Time from emitter to each sensor
-	sensorTimes = [ sqrt( dot(location-emitterLocation,location-emitterLocation) ) / v for location in sensorLocations ]
-
-	c = argmin(sensorTimes)
+	c = np.argmin(sensorTimes)
 	cTime = sensorTimes[c]
 
 	#sensors delta time relative to sensor c
@@ -50,8 +86,8 @@ def tdoa(t1, t2, t3, t4)
 	ijs = range(nSensors)
 	del ijs[c]
 
-	A = zeros([nSensors-1,numOfDimensions])
-	b = zeros([nSensors-1,1])
+	A = np.zeros([nSensors-1,numOfDimensions])
+	b = np.zeros([nSensors-1,1])
 	iRow = 0
 	rankA = 0
 	for i in ijs:
@@ -67,6 +103,30 @@ def tdoa(t1, t2, t3, t4)
 		if rankA >= numOfDimensions:
 			break
 
-	calculatedLocation = asarray( lstsq(A,b)[0] )[:,0]
+	calculatedLocation = asarray( lstsq(A,b)[0] )[:,0])
 
 	return calculatedLocation
+
+def micfunc(x):
+
+	'''Function used to find the minimal error'''
+    e2 = np.linalg.norm((m2 - x),ord=2) - dd2
+    e3 = np.linalg.norm((m3 - x),ord=2) - dd3
+    e4 = np.linalg.norm((m4 - x),ord=2) - dd4
+ 
+    sq_err = (np.power(e2,2) + np.power(e3,2) + np.power(e4,2))
+    return m.sqrt(sq_err)
+	# minimum search
+
+def Optimize(m1, m2, m3, m4, t1, t2, t3, t4):
+
+	c = float((331+(0.610*25)) * 100)
+	dd2 = c*t2
+	dd3 = c*t3
+	dd4 = c*t4
+
+	guess = np.array([5*(np.random.random() - 1),  5*np.random.random()])
+ 
+	results = optimize.fmin(func=micfunc,x0 = guess)
+
+	return results
