@@ -5,18 +5,19 @@ import scipy.signal as sig
 import math as m
 import collections
 
-def interpolate(m1, m2, m3, m4, factor):
+def interpolate(time, m1, m2, m3, m4, factor):
 
 	x = np.linspace(0,len(m1),len(m1))
 
 	inter_factor = np.linspace(0,len(m1),len(m1)*factor) #sets up the amount of interpolation to be done
 
+	t = interp1d(x,time)
 	f1 = interp1d(x,m1)
 	f2 = interp1d(x,m2)
 	f3 = interp1d(x,m3)
 	f4 = interp1d(x,m4)
 
-	return f(inter_factor), f2(inter_factor), f3(inter_factor), f4(inter_factor)
+	return t(inter_factor), f1(inter_factor), f2(inter_factor), f3(inter_factor), f4(inter_factor)
 
 def filter(m1,m2,m3,m4, f1, f2, fs):
 
@@ -68,26 +69,19 @@ def get_taus(cor1, cor2, cor3, cor4, sampleRate):
 
 	return tau1, tau2, tau3, tau4
 
-def tdoa(t1, t2, t3, t4):
+def tdoa(mics, dt, temperature):
 	#speed of sound in medium
-	v = 3450
-	numOfDimensions = 2
-	nSensors = 4
-	region = 3
+	v = (331.3+(0.606*temperature))*100
 
-	sensorTimes = np.array([t1,t2, t3, t4])
+	t = dt
+	p = mics
+	c = np.argmin(t)
 
-	c = np.argmin(sensorTimes)
-	cTime = sensorTimes[c]
-
-	#sensors delta time relative to sensor c
-	t = sensorDeltaTimes = [ sensorTime - cTime for sensorTime in sensorTimes ]
-
-	ijs = range(nSensors)
+	ijs = range(4)
 	del ijs[c]
 
-	A = np.zeros([nSensors-1,numOfDimensions])
-	b = np.zeros([nSensors-1,1])
+	A = np.zeros([4-1,2])
+	b = np.zeros([4-1,1])
 	iRow = 0
 	rankA = 0
 	for i in ijs:
@@ -97,25 +91,24 @@ def tdoa(t1, t2, t3, t4):
 			(v*(t[i])-v*(t[j]))*p[:,c].T*p[:,c] + \
 			v*(t[j])*(p[:,i].T*p[:,i]-v*v*(t[i])**2)
 			rankA = matrix_rank(A)
-			if rankA >= numOfDimensions :
+			if rankA >= 2 :
 				break
 			iRow += 1
-		if rankA >= numOfDimensions:
+		if rankA >= 2:
 			break
 
-	calculatedLocation = asarray( lstsq(A,b)[0] )[:,0])
+	calculatedLocation = np.asarray( lstsq(A,b)[0] )[:,0]
 
 	return calculatedLocation
 
 def micfunc(x):
 
-	'''Function used to find the minimal error'''
-    e2 = np.linalg.norm((m2 - x),ord=2) - dd2
-    e3 = np.linalg.norm((m3 - x),ord=2) - dd3
-    e4 = np.linalg.norm((m4 - x),ord=2) - dd4
+	e2 = np.linalg.norm((m2 - x),ord=2) - dd2
+	e3 = np.linalg.norm((m3 - x),ord=2) - dd3
+	e4 = np.linalg.norm((m4 - x),ord=2) - dd4
  
-    sq_err = (np.power(e2,2) + np.power(e3,2) + np.power(e4,2))
-    return m.sqrt(sq_err)
+	sq_err = (np.power(e2,2) + np.power(e3,2) + np.power(e4,2))
+	return m.sqrt(sq_err)
 	# minimum search
 
 def Optimize(m1, m2, m3, m4, t1, t2, t3, t4):
