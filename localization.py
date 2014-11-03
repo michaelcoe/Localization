@@ -72,16 +72,17 @@ def get_taus(cor1, cor2, cor3, cor4, sampleRate):
 def tdoa(mics, dt, temperature):
 	#speed of sound in medium
 	v = (331.3+(0.606*temperature))*100
+	nSensor = 4
 
 	t = dt
 	p = mics
 	c = np.argmin(t)
 
-	ijs = range(4)
+	ijs = range(nSensor)
 	del ijs[c]
 
-	A = np.zeros([4-1,2])
-	b = np.zeros([4-1,1])
+	A = np.zeros([nSensor-1,2])
+	b = np.zeros([nSensor-1,1])
 	iRow = 0
 	rankA = 0
 	for i in ijs:
