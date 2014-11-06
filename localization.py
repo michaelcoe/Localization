@@ -48,10 +48,10 @@ def correlate(m1, m2, m3, m4):
 	#Assumes that m1 is the reference microphone
 	##----------------------------
 
-	cor1 = np.correlate(m1,m1)
-	cor2 = np.correlate(m1,m2)
-	cor3 = np.correlate(m1,m3)
-	cor4 = np.correlate(m1,m4)
+	cor1 = np.correlate(m1,m1, "full")
+	cor2 = np.correlate(m1,m2, "full")
+	cor3 = np.correlate(m1,m3, "full")
+	cor4 = np.correlate(m1,m4, "full")
 
 	return cor1, cor2, cor3, cor4
 
