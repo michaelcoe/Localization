@@ -4,6 +4,37 @@ from scipy.interpolate import interp1d
 import scipy.signal as sig
 import math as m
 import collections
+import csv
+import sys
+
+def get_sound_data(sound_file, optitrak_file):
+
+	trackable1x = []
+	trackable1z = []
+	trackable2x = []
+	trackable2z = []
+	position_file = open(optitrak_file, 'rb')
+	try:
+		reader = csv.reader(position_file)
+		for row in reader:
+			if row[0] == 'frame':
+				trackable1x.append(row[5])
+				trackable1z.append(row[7])
+				trackable2x.append(row[16])
+				trackable2z.append(row[18])
+	finally:
+		position_file.close()
+
+	sound_source = np.array([float(trackable1x[1]), -float(trackable1z[1])])
+	mic_array = np.array([float(trackable2x[1]), float(trackable2z[1])])
+	data = np.load(sound_file)
+	times = data['times']
+	mic1 = data['mic1']
+	mic2 = data['mic2']
+	mic3 = data['mic3']
+	mic4 = data['mic4']
+
+	return sound_source, mic_array, times, mic1, mic2, mic3, mic4
 
 def interpolate(time, m1, m2, m3, m4, factor):
 
@@ -63,10 +94,10 @@ def get_taus(cor1, cor2, cor3, cor4, sampleRate):
 	c3 = np.argmax(np.absolute(cor3))
 	c4 = np.argmax(np.absolute(cor4))
 
-	tau1 = cor1[c1]/sampleRate
-	tau2 = cor2[c2]/sampleRate
-	tau3 = cor3[c3]/sampleRate
-	tau4 = cor4[c4]/sampleRate
+	tau1 = (cor1[c1]/sampleRate)*np.power(10.0,-6)
+	tau2 = (cor2[c2]/sampleRate)*np.power(10.0,-6)
+	tau3 = (cor3[c3]/sampleRate)*np.power(10.0,-6)
+	tau4 = (cor4[c4]/sampleRate)*np.power(10.0,-6)
 
 	return tau1, tau2, tau3, tau4
 
