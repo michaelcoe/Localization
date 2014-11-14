@@ -4,6 +4,7 @@ from scipy.interpolate import interp1d
 import scipy.signal as sig
 import math as m
 import collections
+import matplotlib.pyplot as plt
 import csv
 import sys
 
@@ -40,8 +41,17 @@ def localize(times, mic1, mic2, mic3, mic4, temperature, mics):
 
 	sampleRate = len(times)/(times[len(times)-1]*np.power(10.0,-6))
 	m1, m2, m3, m4 = normalize(mic1, mic2, mic3,mic4)
-	m1, m2, m3, m4 = run_filter(m1, m2, m3, m4, 800, 1200, sampleRate) 
-	t, m1, m2, m3, m4 = interpolate(times, m1, m2, m3, m4, 10)
+	m1, m2, m3, m4 = run_filter(m1, m2, m3, m4, 800, 1200, sampleRate)
+
+	plt.plot(times, m1, times, m2, times, m3,times, m4)
+	plt.xlabel('Time [microseconds]')
+	plt.ylabel('Voltage [mV]')
+	plt.title('Filtered Signal Using BandPass Filter around 1KHz')
+	plt.legend(['Mic1', 'Mic2', 'Mic3','Mic4'])
+	plt.show()
+
+	t, m1, m2, m3, m4 = interpolate(times, m1, m2, m3, m4, 100)
+
 
 	testm1 = m1[600:1000]
 	testm2 = m2[600:1000]

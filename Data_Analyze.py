@@ -31,7 +31,7 @@ for files in range(0,len(sound_files)):
 
 	source_optitrak, mics_optitrak, times, mic1, mic2, mic3, mic4 = lc.get_sound_data(sound_files[files], optitrak_files[files])
 
-	location_alg = lc.localize(times, mic1, mic2, mic3, mic4,temperature, mics)
+	location_alg = lc.localize(times, mic1, mic2, mic3, mic4, temperature, mics)
 
 	s_array = np.append(s_array,mics_optitrak)
 	sourceX = np.append(sourceX, source_optitrak[0])
