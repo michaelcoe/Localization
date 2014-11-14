@@ -36,6 +36,38 @@ def get_sound_data(sound_file, optitrak_file):
 
 	return sound_source, mic_array, times, mic1, mic2, mic3, mic4
 
+def localize(times, mic1, mic2, mic3, mic4, temperature, mics):
+
+	sampleRate = len(times)/(times[len(times)-1]*np.power(10.0,-6))
+	m1, m2, m3, m4 = normalize(mic1, mic2, mic3,mic4)
+	m1, m2, m3, m4 = run_filter(m1, m2, m3, m4, 800, 1200, sampleRate) 
+	t, m1, m2, m3, m4 = interpolate(times, m1, m2, m3, m4, 10)
+
+	testm1 = m1[600:1000]
+	testm2 = m2[600:1000]
+	testm3 = m3[600:1000]
+	testm4 = m4[600:1000]
+	m1val = testm1[2]
+	m2val = testm2[2]
+	m3val = testm3[2]
+	m4val = testm4[2]
+
+	cor1, cor2, cor3, cor4 = correlate(testm3, testm1, testm2, testm4)
+	t1, t2, t3, t4 = get_taus(cor1, cor2, cor3, cor4, sampleRate)
+
+	deltat = np.array([t1, t2, t3, t4])
+
+	c = np.argmin(deltat)
+	cTime = deltat[c]
+	
+
+	#calculate the difference in time relative to the shortest time
+	ddt = np.array([ dt - cTime for dt in deltat ])
+	location = tdoa(mics, ddt, temperature)
+
+	return location
+
+
 def interpolate(time, m1, m2, m3, m4, factor):
 
 	x = np.linspace(0,len(m1),len(m1))
@@ -50,7 +82,7 @@ def interpolate(time, m1, m2, m3, m4, factor):
 
 	return t(inter_factor), f1(inter_factor), f2(inter_factor), f3(inter_factor), f4(inter_factor)
 
-def filter(m1,m2,m3,m4, f1, f2, fs):
+def run_filter(m1,m2,m3,m4, f1, f2, fs):
 
 	nyq = 0.5 * fs
 	low = f1 / nyq
