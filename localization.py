@@ -108,10 +108,10 @@ def run_filter(m1,m2,m3,m4, f1, f2, fs):
 
 def normalize(m1, m2, m3, m4):
 
-	norm1 = m1 - np.nanmean(m1)
-	norm2 = m2 - np.nanmean(m2)
-	norm3 = m3 - np.nanmean(m3)
-	norm4 = m4 - np.nanmean(m4)
+	norm1 = (m1 - np.nanmean(m1))/np.nanstd(m1)
+	norm2 = (m2 - np.nanmean(m2))/np.nanstd(m2)
+	norm3 = (m3 - np.nanmean(m3))/np.nanstd(m3)
+	norm4 = (m4 - np.nanmean(m4))/np.nanstd(m4)
 
 	return norm1, norm2, norm3, norm4
 	
@@ -198,3 +198,25 @@ def Optimize(m1, m2, m3, m4, t1, t2, t3, t4):
 	results = optimize.fmin(func=micfunc,x0 = guess)
 
 	return results
+
+def find_phase(m1, m2, m3, m4):
+
+	A1 = np.argmax(m1)
+	A2 = np.argmax(m2)
+	A3 = np.argmax(m3)
+	A4 = np.argmax(m4)
+
+	#finds the phase between the 4 different signals
+	#assumes that m1 is the lead signal and calculates all others
+	#relative to that.
+	ph11 = np.arccos(2*np.mean(m1*m1)/(A1*A2))
+	ph12 = np.arccos(2*np.mean(m1*m2)/(A1*A2))
+	ph13 = np.arccos(2*np.mean(m1*m3)/(A1*A3))
+	ph14 = np.arccos(2*np.mean(m1*m4)/(A1*A4))
+
+	delt1 = (ph11*2*np.pi)/0.001
+	delt2 = (ph12*2*np.pi)/0.001
+	delt3 = (ph12*2*np.pi)/0.001
+	delt4 = (ph12*2*np.pi)/0.001
+
+	return delt1, delt2, delt3, delt4
