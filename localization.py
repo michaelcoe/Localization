@@ -209,14 +209,14 @@ def find_phase(m1, m2, m3, m4):
 	#finds the phase between the 4 different signals
 	#assumes that m1 is the lead signal and calculates all others
 	#relative to that.
-	ph11 = np.arccos(2*np.mean(m1*m1)/(A1*A2))
-	ph12 = np.arccos(2*np.mean(m1*m2)/(A1*A2))
-	ph13 = np.arccos(2*np.mean(m1*m3)/(A1*A3))
-	ph14 = np.arccos(2*np.mean(m1*m4)/(A1*A4))
+	ph11 = np.arccos((2*np.mean(m1*m1))/(A1*A1))
+	ph12 = np.arccos((2*np.mean(m1*m2))/(A1*A2))
+	ph13 = np.arccos((2*np.mean(m1*m3))/(A1*A3))
+	ph14 = np.arccos((2*np.mean(m1*m4))/(A1*A4))
 
-	delt1 = (ph11*2*np.pi)/0.001
-	delt2 = (ph12*2*np.pi)/0.001
-	delt3 = (ph12*2*np.pi)/0.001
-	delt4 = (ph12*2*np.pi)/0.001
+	delt1 = ph11/(2*np.pi*1000)
+	delt2 = ph12/(2*np.pi*1000)
+	delt3 = ph13/(2*np.pi*1000)
+	delt4 = ph14/(2*np.pi*1000)
 
 	return delt1, delt2, delt3, delt4
