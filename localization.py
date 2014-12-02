@@ -136,7 +136,7 @@ def get_taus(cor1, cor2, cor3, cor4, sampleRate):
 	c3 = np.argmax(np.absolute(cor3))
 	c4 = np.argmax(np.absolute(cor4))
 
-	tau1 = (cor1[c1]/sampleRate)*np.power(10.0,-6)
+	tau1 = 0
 	tau2 = (cor2[c2]/sampleRate)*np.power(10.0,-6)
 	tau3 = (cor3[c3]/sampleRate)*np.power(10.0,-6)
 	tau4 = (cor4[c4]/sampleRate)*np.power(10.0,-6)
@@ -201,18 +201,18 @@ def Optimize(m1, m2, m3, m4, t1, t2, t3, t4):
 
 def find_phase(m1, m2, m3, m4):
 
-	A1 = np.argmax(m1)
-	A2 = np.argmax(m2)
-	A3 = np.argmax(m3)
-	A4 = np.argmax(m4)
-
 	#finds the phase between the 4 different signals
 	#assumes that m1 is the lead signal and calculates all others
 	#relative to that.
-	ph11 = np.arccos((2*np.mean(m1*m1))/(A1*A1))
-	ph12 = np.arccos((2*np.mean(m1*m2))/(A1*A2))
-	ph13 = np.arccos((2*np.mean(m1*m3))/(A1*A3))
-	ph14 = np.arccos((2*np.mean(m1*m4))/(A1*A4))
+	A1 = m1[np.argmax(m1)]
+	A2 = m2[np.argmax(m2)]
+	A3 = m3[np.argmax(m3)]
+	A4 = m4[np.argmax(m4)]
+
+	ph11 = 0#np.arccos((2*np.nanmean(m1*m2)/(A1*A1)))
+	ph12 = np.arccos((2*np.nanmean(m1*m2)/(A1*A2)))
+	ph13 = np.arccos((2*np.nanmean(m1*m3)/(A1*A3)))
+	ph14 = np.arccos((2*np.nanmean(m1*m4)/(A1*A4)))
 
 	delt1 = ph11/(2*np.pi*1000)
 	delt2 = ph12/(2*np.pi*1000)
